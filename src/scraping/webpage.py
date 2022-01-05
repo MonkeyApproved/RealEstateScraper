@@ -4,18 +4,16 @@ from bs4 import BeautifulSoup
 
 
 class WebPage(object):
-    def __init__(self, url: str, test: int) -> None:
+    def __init__(self, url: str) -> None:
         self.url = url
         self.logger = logging.getLogger(url)
-        self.html = self.load_html(url)
-        self.soup = self.make_soup(self.html)
-        self.test = test
 
-    def load_html(self, url: str):
+    @property
+    def html(self):
         try:
-            page = requests.get(url)
+            page = requests.get(self.url)
             self.logger.info(
-                f'URL "{url}" loaded successfully (length {len(page.text)})'
+                f'URL "{self.url}" loaded successfully (length {len(page.text)})'
             )
             return page.content
         except requests.exceptions.Timeout as e:
@@ -27,5 +25,6 @@ class WebPage(object):
 
         return ""
 
-    def make_soup(self, html: str):
-        return BeautifulSoup(html, "html.parser")
+    @property
+    def soup(self):
+        return BeautifulSoup(self.html, "html.parser")
