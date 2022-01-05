@@ -1,4 +1,3 @@
-import pytest
 from scraping.xe import Xe
 
 

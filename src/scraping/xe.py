@@ -1,4 +1,5 @@
 import re
+from typing import Dict
 from scraping.webpage import WebPage
 
 
@@ -51,7 +52,7 @@ class Xe_Property(object):
 class Xe(WebPage):
     def __init__(self, url: str) -> None:
         super().__init__(url)
-        self.property_dict: dict[str, Xe_Property] = {}
+        self.property_dict: Dict[str, Xe_Property] = {}
 
     def check_for_properties(self):
         cells = self.soup.find_all("div", class_="cell")
