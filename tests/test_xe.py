@@ -1,8 +1,7 @@
-import logging
 from scraping.xe import Xe
 
 
-def main():
+def test_webpage():
     xe_url = (
         "https://www.xe.gr/property/results?"
         "transaction_name=buy&"
@@ -15,8 +14,4 @@ def main():
     )
     xe = Xe(xe_url)
     xe.check_for_properties()
-
-
-if __name__ == "__main__":
-    logging.basicConfig(filename="output.log", level=logging.INFO)
-    main()
+    assert len(xe.property_dict) > 0
