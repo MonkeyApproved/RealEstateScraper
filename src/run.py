@@ -15,6 +15,7 @@ def main():
     )
     xe = Xe(xe_url)
     xe.check_for_properties()
+    print(xe_url)
 
 
 if __name__ == "__main__":

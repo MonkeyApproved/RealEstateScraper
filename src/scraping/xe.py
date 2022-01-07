@@ -1,4 +1,7 @@
 import re
+import requests
+import logging
+from pprint import pprint
 from typing import Dict
 from scraping.webpage import WebPage
 
@@ -6,9 +9,21 @@ from scraping.webpage import WebPage
 class Xe_Property(object):
     def __init__(self, cell) -> None:
         self.cell = cell
+        self.logger = logging.getLogger(f"Property {self.id}")
 
     def __repr__(self) -> str:
-        return f"< {self.id} | {self.area} | {self.price} | {self.price_per_sqm} >"
+        return f"< Property {self.id} >"
+
+    def get_details(self):
+        try:
+            response = requests.get(self.url)
+            self.logger.info(f'Details from "{self.url}" loaded')
+            return response.json()["result"]
+        except requests.exceptions.Timeout as e:
+            self.logger.warning(f"Request timeout: {e.response}")
+        except requests.exceptions.RequestException as e:
+            self.logger.warning(f"Request failed: {e.response}")
+        return {}
 
     @staticmethod
     def get_decimal(text: str):
@@ -48,6 +63,10 @@ class Xe_Property(object):
             return None
         return match.group("id")
 
+    @property
+    def url(self):
+        return f"https://www.xe.gr/property/results/single_result?id={self.id}"
+
 
 class Xe(WebPage):
     def __init__(self, url: str) -> None:
@@ -62,3 +81,5 @@ class Xe(WebPage):
             id = property.id
             if id is not None and id not in self.property_dict:
                 self.property_dict[id] = property
+                pprint(property.get_details())
+                break
