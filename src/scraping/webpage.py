@@ -4,28 +4,22 @@ from bs4 import BeautifulSoup
 
 
 class WebPage(object):
-    def __init__(self, url: str, test: int) -> None:
+    def __init__(self, url: str) -> None:
         self.url = url
-        self.logger = logging.getLogger(url)
-        self.html = self.load_html(url)
-        self.soup = self.make_soup(self.html)
-        self.test = test
+        self.logger = logging.getLogger("WebPage")
 
-    def load_html(self, url: str):
+    @property
+    def html(self):
         try:
-            page = requests.get(url)
-            self.logger.info(
-                f'URL "{url}" loaded successfully (length {len(page.text)})'
-            )
+            page = requests.get(self.url)
+            self.logger.info(f'"{self.url}" loaded (length {len(page.text)})')
             return page.content
         except requests.exceptions.Timeout as e:
             self.logger.warning(f"Request timeout: {e.response}")
-        except requests.exceptions.TooManyRedirects as e:
-            self.logger.warning(f"Bad URL: {e.response}")
         except requests.exceptions.RequestException as e:
-            self.logger.warning(f"Bad URL: {e.response}")
-
+            self.logger.warning(f"Request failed: {e.response}")
         return ""
 
-    def make_soup(self, html: str):
-        return BeautifulSoup(html, "html.parser")
+    @property
+    def soup(self):
+        return BeautifulSoup(self.html, "html.parser")

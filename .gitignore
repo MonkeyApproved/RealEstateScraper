@@ -1,4 +1,7 @@
+# Mac OSX
 .DS_Store
+
+# Generated content
 output/
 
 # Byte-compiled / optimized / DLL files
