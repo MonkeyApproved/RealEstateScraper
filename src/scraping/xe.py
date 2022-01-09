@@ -2,7 +2,7 @@ import re
 import requests
 import logging
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict, List, Set
 from scraping.webpage import WebPage
 
 ROOT_DIR = Path(__file__).parent.parent.parent
@@ -61,7 +61,7 @@ class Xe_Property(object):
     def download_images(self, result: Dict[str, Any]):
         if not self.get_images:
             return
-        image_urls: list[str] = result.get("image_gallery", [])
+        image_urls: List[str] = result.get("image_gallery", [])
         for url in image_urls:
             try:
                 response = requests.get(url)
