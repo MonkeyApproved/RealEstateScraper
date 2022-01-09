@@ -13,5 +13,5 @@ def test_webpage():
         "minimum_size=70"
     )
     xe = Xe(xe_url)
-    xe.check_for_properties()
+    xe.check_for_properties(get_images=False)
     assert len(xe.property_dict) > 0
