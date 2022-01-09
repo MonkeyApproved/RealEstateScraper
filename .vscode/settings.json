@@ -4,4 +4,31 @@
     "editor.insertSpaces": true,
     "editor.formatOnSave": true
   },
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "driver": "MySQL",
+      "name": "MySQL local",
+      "database": "sql_hr",
+      "username": "vscode",
+      "password": "sql1234"
+    },
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "ScooterAnalysis",
+      "database": "/Users/Janik/Work/GitHub/TierAnalysis/sqlite.db"
+    },
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "Django Properties",
+      "database": "${workspaceFolder:RealEstateScraper}/src/db.sqlite3"
+    }
+  ],
 }
