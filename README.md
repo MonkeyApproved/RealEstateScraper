@@ -19,7 +19,31 @@ The main entry point is *backend/urls.py* from where calls can be directed to th
 
 ### Database models
 
-In order to apply a new model, we first run `python src/manage.py makemigrations`.
+In order to apply a new model, we first run
+
+```bash
+python src/manage.py makemigrations
+```
+
 This will create a new migration file in the migrations folder of the App.
-We can also check out the actual SQL command this will create, by running `python src/manage.py sqlmigrate <app-name> <migration id>` (replace `0001` with the id of the migration).
-Afterwards in order to apply the migration to our database, we run `python src/manage.py migrate`.
+We can also check out the actual SQL command this will create, by running
+
+```bash
+python src/manage.py sqlmigrate <app name> <migration id>
+```
+
+(replace `0001` with the id of the migration).
+Afterwards in order to apply the migration to our database, we run
+
+```bash
+python src/manage.py migrate
+```
+
+### Job Scheduler
+
+In order to use a job scheduler for an app, we first had to install the *django-extensions* package.
+The scheduler can then be initialized by running
+
+```bash
+python src/manage.py create_jobs <app name>
+```

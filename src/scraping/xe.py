@@ -1,14 +1,16 @@
 import re
+import json
 import requests
 import logging
+from enum import Enum
 from functools import cached_property
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 from scraping.webpage import WebPage
 from properties import models
 
 ROOT_DIR = Path(__file__).parent.parent.parent
+DETAILS_DIR = Path(ROOT_DIR, "output", "details")
 IMAGE_DIR = Path(ROOT_DIR, "output", "images")
 
 
@@ -46,9 +48,10 @@ class XeProperty(object):
             self.logger.warning(f"Request failed: {e.response}")
         return None
 
-    def write_to_database(self):
+    def save_to_database(self):
         if self.details is None:
             return
+        self.logger.info("Saving details to database")
 
         owner = models.Owner(owner_email=self.details.get("owner_email", None))
         owner.save()
@@ -84,6 +87,14 @@ class XeProperty(object):
             metrics=page_metrics,
         )
         property.save()
+
+    def save_details_to_disk(self):
+        path = Path(DETAILS_DIR, f"{self.id}.json")
+        if path.exists():
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w") as file:
+            json.dump(self.details, file, indent=4, sort_keys=True)
 
     @property
     def image_urls(self):
@@ -131,22 +142,53 @@ class XeProperty(object):
         return bool(value)
 
 
+class PropertyType(Enum):
+    RESIDENCE = "re_residence"
+    LAND = "re_land"
+
+
 class Xe(WebPage):
-    def __init__(self, url: str) -> None:
-        super().__init__(url)
+    def __init__(
+        self, type: PropertyType, max_price: int, min_size: int, min_year: int
+    ) -> None:
+        super().__init__()
+        self.url = (
+            "https://www.xe.gr/property/results?"
+            "transaction_name=buy&"
+            f"item_type={type.value}&"
+            "geo_place_id=ChIJ8UNwBh-9oRQR3Y1mdkU1Nic&"
+            f"maximum_price={max_price}&"
+            f"minimum_construction_year={min_year}&"
+            f"minimum_size={min_size}"
+        )
 
-    def check_for_properties(self, get_images: bool = False, write_to_db: bool = False):
-        cells = self.soup.find_all("div", class_="cell")
-        properties: Dict[str, XeProperty] = {}
-
-        for cell in cells:
-            property = XeProperty(cell)
-            id = property.id
-            if id is None:
-                continue
-            properties[id] = property.details
-            if get_images:
-                property.save_images()
-            if write_to_db:
-                property.write_to_database()
-        return properties
+    def check_for_properties(
+        self,
+        save_images: bool = False,
+        save_to_db: bool = False,
+        save_details_to_disc: bool = False,
+    ):
+        count = 0
+        page = 1
+        while True:
+            self.logger.info(f"Parsing properties from page {page}")
+            url_with_page = f"{self.url}&page={page}"
+            cells = self.get_soup(url_with_page).find_all("div", class_="cell")
+            for cell in cells:
+                property = XeProperty(cell)
+                id = property.id
+                if id is None:
+                    # cell does not contain property details
+                    continue
+                if save_images:
+                    property.save_images()
+                if save_to_db:
+                    property.save_to_database()
+                if save_details_to_disc:
+                    property.save_details_to_disk()
+                count += 1
+            page += 1
+            if len(cells) < 30:
+                # this was the last page of the pagination
+                break
+        return count

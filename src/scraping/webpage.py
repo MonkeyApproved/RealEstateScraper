@@ -4,15 +4,13 @@ from bs4 import BeautifulSoup
 
 
 class WebPage(object):
-    def __init__(self, url: str) -> None:
-        self.url = url
+    def __init__(self) -> None:
         self.logger = logging.getLogger("WebPage")
 
-    @property
-    def html(self):
+    def get_html(self, url: str):
         try:
-            page = requests.get(self.url)
-            self.logger.info(f'"{self.url}" loaded (length {len(page.text)})')
+            page = requests.get(url)
+            self.logger.info(f'"{url}" loaded (length {len(page.text)})')
             return page.content
         except requests.exceptions.Timeout as e:
             self.logger.warning(f"Request timeout: {e.response}")
@@ -20,6 +18,5 @@ class WebPage(object):
             self.logger.warning(f"Request failed: {e.response}")
         return ""
 
-    @property
-    def soup(self):
-        return BeautifulSoup(self.html, "html.parser")
+    def get_soup(self, url: str):
+        return BeautifulSoup(self.get_html(url), "html.parser")
