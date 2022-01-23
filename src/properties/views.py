@@ -19,6 +19,6 @@ def scrape_now(request):
         min_year=2000,
     )
     count = xe.check_for_properties(
-        save_details_to_disc=True, save_images=False, save_to_db=True
+        save_details_to_disc=False, save_images=False, save_to_db=True
     )
     return HttpResponse(f"Parsed a total of {count} properties.")
