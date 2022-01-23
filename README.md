@@ -4,6 +4,23 @@
 
 To initialize the virtual environment with all dependencies simply run `source init.sh`.
 
+## Running tests
+
+Run style checks with
+```
+flake8 src
+```
+
+Run type checks with
+```
+mypy src
+```
+
+Run unit and integration tests with
+```
+pytest
+```
+
 ## Django backend
 
 The initial setup was done by adding *Django* to the requirements and installing it.
