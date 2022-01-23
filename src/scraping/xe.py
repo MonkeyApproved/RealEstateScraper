@@ -254,7 +254,7 @@ class Xe(WebPage):
             self.logger.info(f"On page {page}, {cell_count} cell elements found.")
             self.logger.info(f"A total of {count} properties have been parsed.")
             if len(cells) < 30:
-                self.logger.info(f"All done!")
+                self.logger.info("All done!")
                 # this was the last page of the pagination
                 break
         return count

@@ -3,7 +3,7 @@ from logging import getLogger
 from datetime import date
 
 logger = getLogger("Date Conversion")
-date_pattern = re.compile("(?P<day>\d{1,2}) (?P<month>[^\x00-\x7F]+) (?P<year>\d{4})")
+date_pattern = re.compile(r"(?P<day>\d{1,2}) (?P<month>[^\x00-\x7F]+) (?P<year>\d{4})")
 
 
 greek_month_names = {
