@@ -5,6 +5,13 @@
 .idea
 .vscode
 
+# Git
+.gitignore
+.git
+
+# Docker
+.docker
+
 # Generated content
 output/
 
