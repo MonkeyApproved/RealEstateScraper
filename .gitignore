@@ -1,6 +1,10 @@
 # Mac OSX
 .DS_Store
 
+# IDE folders
+.idea/
+.vscode/
+
 # Generated content
 output/
 

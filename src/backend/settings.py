@@ -34,10 +34,13 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "debug_toolbar",
     "django_extensions",
+    "corsheaders",
+    "rest_framework",
     "properties",
 ]
 
@@ -50,9 +53,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
+
+CORS_ORIGIN_WHITELIST = [
+     "http://localhost:3000"
+]
 
 TEMPLATES = [
     {
