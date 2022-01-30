@@ -1,6 +1,34 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from scraping.xe import PropertyType, Xe
+from rest_framework import viewsets
+from . import serializers
+from . import models
+
+
+class XeResultView(viewsets.ModelViewSet):
+    serializer_class = serializers.XeResultSerializer
+    queryset = models.XeResult.objects.all()
+
+
+class OwnerView(viewsets.ModelViewSet):
+    serializer_class = serializers.OwnerSerializer
+    queryset = models.Owner.objects.all()
+
+
+class XeResidenceView(viewsets.ModelViewSet):
+    serializer_class = serializers.XeResidence
+    queryset = models.XeResidence.objects.all()
+
+
+class GeoLocationView(viewsets.ModelViewSet):
+    serializer_class = serializers.GeoLocationSerializer
+    queryset = models.GeoLocation.objects.all()
+
+
+class PageMetricsView(viewsets.ModelViewSet):
+    serializer_class = serializers.PageMetrics
+    queryset = models.PageMetrics.objects.all()
 
 
 def help(request):
