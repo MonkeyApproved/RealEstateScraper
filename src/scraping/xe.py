@@ -206,16 +206,26 @@ class PropertyType(Enum):
     LAND = "re_land"
 
 
+class GeoPlaceId(Enum):
+    ATHENS = "ChIJ8UNwBh-9oRQR3Y1mdkU1Nic"
+
+
 class Xe(WebPage):
     def __init__(
-        self, type: PropertyType, max_price: int, min_size: int, min_year: int
+            self,
+            tranaction: str,
+            type: str,
+            geo_place_id: str,
+            max_price: int,
+            min_year: int,
+            min_size: int
     ) -> None:
         super().__init__()
         self.url = (
             "https://www.xe.gr/property/results?"
-            "transaction_name=buy&"
-            f"item_type={type.value}&"
-            "geo_place_id=ChIJ8UNwBh-9oRQR3Y1mdkU1Nic&"
+            f"transaction_name={tranaction}&"
+            f"item_type={type}&"
+            f"geo_place_id={geo_place_id}&"
             f"maximum_price={max_price}&"
             f"minimum_construction_year={min_year}&"
             f"minimum_size={min_size}"

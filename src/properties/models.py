@@ -36,6 +36,9 @@ class XeResidence(models.Model):
     item_type = models.CharField(max_length=100, null=True)
     property_type = models.CharField(max_length=100, null=True)
 
+    def __str__(self):
+        return f'property in {self.area} for {self.price_total}'
+
 
 class XeResult(models.Model):
     xe_id = models.IntegerField()
