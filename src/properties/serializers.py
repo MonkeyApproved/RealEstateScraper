@@ -5,7 +5,7 @@ from .models import XeResult, XeResidence, GeoLocation, PageMetrics, Owner
 class XeResidenceSerializer(ModelSerializer):
     class Meta:
         model = XeResidence
-        fields = ('price_total', 'size_sqm', 'construction_year')
+        fields = '__all__'
 
 
 class GeoLocationSerializer(ModelSerializer):
@@ -28,6 +28,7 @@ class OwnerSerializer(ModelSerializer):
 
 class XeResultSerializer(ModelSerializer):
     details = XeResidenceSerializer()
+    location = GeoLocationSerializer()
     owner = SlugRelatedField(
         slug_field='email',
         read_only=True

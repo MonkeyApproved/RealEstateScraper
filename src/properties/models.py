@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from data_manager.models import DataLoad
 
 
 class Owner(models.Model):
@@ -49,3 +50,4 @@ class XeResult(models.Model):
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
     location = models.ForeignKey(GeoLocation, on_delete=models.CASCADE)
     details = models.ForeignKey(XeResidence, on_delete=models.CASCADE)
+    data_load = models.ForeignKey(DataLoad, on_delete=models.CASCADE)
