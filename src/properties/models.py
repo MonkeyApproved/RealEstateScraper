@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from data_manager.models import DataLoad
 
 
 class Owner(models.Model):
@@ -36,6 +37,9 @@ class XeResidence(models.Model):
     item_type = models.CharField(max_length=100, null=True)
     property_type = models.CharField(max_length=100, null=True)
 
+    def __str__(self):
+        return f'property in {self.area} for {self.price_total}'
+
 
 class XeResult(models.Model):
     xe_id = models.IntegerField()
@@ -46,3 +50,4 @@ class XeResult(models.Model):
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
     location = models.ForeignKey(GeoLocation, on_delete=models.CASCADE)
     details = models.ForeignKey(XeResidence, on_delete=models.CASCADE)
+    data_load = models.ForeignKey(DataLoad, on_delete=models.CASCADE)

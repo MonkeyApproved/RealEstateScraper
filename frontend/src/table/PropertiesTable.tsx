@@ -1,46 +1,38 @@
-import { Table, message } from 'antd';
-import { useEffect, useState } from 'react';
-import { getXeResult, XeResult } from '../requests/xe_results';
+import { Table } from 'antd';
+import Column from 'antd/lib/table/Column';
+import { Details, XeResult } from '../requests/xe_properties';
+import { renderDate } from './tableHelper';
 
 export interface PropertiesTableProps {
   propertyList: XeResult[];
+  count: number;
 }
 
-export default function PropertiesTable() {
-  const [data, setData] = useState<XeResult[]>([]);
+export default function PropertiesTable({ propertyList, count }: PropertiesTableProps) {
+  const renderRooms = (value: Details) => {
+    return <span>{`${value.bathrooms || 0} bath, ${value.bedrooms || 0} bed`}</span>;
+  };
 
-  useEffect(() => {
-    getXeResult()
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        message.error(`Failed to load Xe Results: ${error}`);
-      });
-  }, []);
-
-  const columns = [
-    {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: 'Xe Id',
-      dataIndex: 'xe_id',
-      key: 'xe_id',
-    },
-    {
-      title: 'First parsed',
-      dataIndex: 'first_parsed_on',
-      key: 'first_parsed_on',
-    },
-    {
-      title: 'Last parsed',
-      dataIndex: 'last_parsed_on',
-      key: 'last_parsed_on',
-    },
-  ];
-
-  return <Table dataSource={data} columns={columns} />;
+  return (
+    <Table dataSource={propertyList} pagination={{ pageSize: 20, total: count, simple: true }}>
+      <Column title="Area" dataIndex={['details', 'area']} key="area" />
+      <Column title="Price" dataIndex={['details', 'price_total']} key="price_total" />
+      <Column title="Size" dataIndex={['details', 'size_sqm']} key="size_sqm" />
+      <Column title="Year" dataIndex={['details', 'construction_year']} key="year" />
+      <Column title="Owner" dataIndex="owner" key="owner" />
+      <Column title="Rooms" dataIndex="details" key="details" render={renderRooms} />
+      <Column
+        title="First parsed"
+        dataIndex="first_parsed_on"
+        key="first_parsed_on"
+        render={renderDate}
+      />
+      <Column
+        title="Last parsed"
+        dataIndex="last_parsed_on"
+        key="last_parsed_on"
+        render={renderDate}
+      />
+    </Table>
+  );
 }

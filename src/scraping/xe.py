@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 from scraping.webpage import WebPage
 from scraping.dates import parse_greek_date
 from properties import models
+from data_manager.models import DataLoad, LoadConfiguration
 
 ROOT_DIR = Path(__file__).parent.parent.parent
 DETAILS_DIR = Path(ROOT_DIR, "output", "details")
@@ -19,7 +20,7 @@ IMAGE_DIR = Path(ROOT_DIR, "output", "images")
 class XeProperty(object):
     def __init__(self, cell) -> None:
         self.cell = cell
-        self.logger = logging.getLogger(f"Property {self.id}")
+        self.logger = logging.getLogger(f"{self.id}")
 
     def __repr__(self) -> str:
         return f"< Property {self.id} >"
@@ -75,9 +76,9 @@ class XeProperty(object):
             return None
         return parse_greek_date(date_string)
 
-    def save_to_database(self):
+    def save_to_database(self, data_load: DataLoad):
         if self.details is None:
-            return
+            return False
 
         # for every run we save the current page metrics (clicks/saves)
         self.add_page_metrics_to_database()
@@ -85,10 +86,10 @@ class XeProperty(object):
         # now we check if we already have an entry with the same property id
         # containing the latest updates (same "modified" date as current details)
         if self.already_in_database():
-            self.logger.info("Already exists")
+            return False
         else:
-            self.add_result_to_database()
-            self.logger.info("Added to database")
+            self.add_result_to_database(data_load=data_load)
+            return True
 
     def already_in_database(self) -> bool:
         entries = models.XeResult.objects.filter(
@@ -106,7 +107,7 @@ class XeProperty(object):
         # no matching entry found in database
         return False
 
-    def add_result_to_database(self):
+    def add_result_to_database(self, data_load: DataLoad):
         result = models.XeResult(
             xe_id=self.get_integer("id"),
             created=self.get_date("creation_date"),
@@ -114,6 +115,7 @@ class XeProperty(object):
             owner=self.add_owner_to_database(),
             location=self.add_geo_location_to_database(),
             details=self.add_residence_to_database(),
+            data_load=data_load
         )
         result.save()
         return result
@@ -206,16 +208,25 @@ class PropertyType(Enum):
     LAND = "re_land"
 
 
+class GeoPlaceId(Enum):
+    ATHENS = "ChIJ8UNwBh-9oRQR3Y1mdkU1Nic"
+
+
 class Xe(WebPage):
     def __init__(
-        self, type: PropertyType, max_price: int, min_size: int, min_year: int
+            self,
+            type: str,
+            geo_place_id: str,
+            max_price: int,
+            min_year: int,
+            min_size: int,
     ) -> None:
         super().__init__()
         self.url = (
             "https://www.xe.gr/property/results?"
-            "transaction_name=buy&"
-            f"item_type={type.value}&"
-            "geo_place_id=ChIJ8UNwBh-9oRQR3Y1mdkU1Nic&"
+            f"transaction_name=buy&"
+            f"item_type={type}&"
+            f"geo_place_id={geo_place_id}&"
             f"maximum_price={max_price}&"
             f"minimum_construction_year={min_year}&"
             f"minimum_size={min_size}"
@@ -223,11 +234,19 @@ class Xe(WebPage):
 
     def check_for_properties(
         self,
+        load_config: LoadConfiguration,
         save_images: bool = False,
         save_to_db: bool = False,
         save_details_to_disc: bool = False,
     ):
-        count = 0
+        data_load = DataLoad(
+            url=self.url,
+            count_total=0,
+            count_new=0,
+            completed=False,
+            load_config=load_config
+        )
+        data_load.save()
         page = 0
         while True:
             page += 1
@@ -238,23 +257,25 @@ class Xe(WebPage):
             )
             for cell in cells:
                 property = XeProperty(cell)
-                id = property.id
-                if id is None:
-                    # self.logger.info(f"no id found for {cell}")
+                if property.id is None:
                     # cell does not contain property details
                     continue
                 if save_images:
                     property.save_images()
                 if save_to_db:
-                    property.save_to_database()
+                    is_new = property.save_to_database(data_load=data_load)
+                    if is_new:
+                        data_load.count_new += 1
                 if save_details_to_disc:
                     property.save_details_to_disk()
-                count += 1
+                data_load.count_total += 1
+            data_load.save()
             cell_count = len(cells)
             self.logger.info(f"On page {page}, {cell_count} cell elements found.")
-            self.logger.info(f"A total of {count} properties have been parsed.")
             if len(cells) < 30:
                 self.logger.info("All done!")
                 # this was the last page of the pagination
                 break
-        return count
+        data_load.completed = True
+        data_load.save()
+        return data_load
