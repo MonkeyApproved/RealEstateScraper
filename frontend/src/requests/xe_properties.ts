@@ -62,8 +62,9 @@ export interface GetDetails {
   metrics: Metrics[];
 }
 
-export async function getXeResult(): Promise<AxiosResponse<Pagination<XeResult>>> {
-  return axios.get(`${HOST}/xe_result/`);
+export async function getXeResult(page: number): Promise<AxiosResponse<Pagination<XeResult>>> {
+  const offset = (page - 1) * 20;
+  return axios.get(`${HOST}/xe_result/?limit=20&offset=${offset}`);
 }
 
 export async function getDetails(xe_id: string): Promise<AxiosResponse<GetDetails>> {

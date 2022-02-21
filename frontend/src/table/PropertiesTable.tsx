@@ -7,9 +7,10 @@ import { renderDate } from './tableHelper';
 export interface PropertiesTableProps {
   propertyList: XeResult[];
   count: number;
+  setPage: (value: number) => void;
 }
 
-export default function PropertiesTable({ propertyList, count }: PropertiesTableProps) {
+export default function PropertiesTable({ propertyList, count, setPage }: PropertiesTableProps) {
   const navigate = useNavigate();
 
   const renderRooms = (value: Details) => {
@@ -20,10 +21,14 @@ export default function PropertiesTable({ propertyList, count }: PropertiesTable
     navigate(`/details/${record.xe_id}`);
   };
 
+  const pageChange = (page: number) => {
+    setPage(page);
+  };
+
   return (
     <Table
       dataSource={propertyList}
-      pagination={{ pageSize: 20, total: count, simple: true }}
+      pagination={{ pageSize: 20, total: count, simple: true, onChange: pageChange }}
       onRow={(record) => {
         return {
           onClick: () => onRowClick(record),
