@@ -36,6 +36,36 @@ export interface Location {
   longitude: string;
 }
 
+export interface Owner {
+  id: number;
+  account_id: number;
+  email: string;
+  address: string;
+  ref_id: string;
+  company_title: string;
+  active_ads: number;
+}
+
+export interface Metrics {
+  id: number;
+  date: string;
+  xe_id: number;
+  saves: number;
+  visits: number;
+}
+
+export interface GetDetails {
+  xe_result: XeResult[];
+  details: Details[];
+  location: Location[];
+  owner: Owner[];
+  metrics: Metrics[];
+}
+
 export async function getXeResult(): Promise<AxiosResponse<Pagination<XeResult>>> {
   return axios.get(`${HOST}/xe_result/`);
+}
+
+export async function getDetails(xe_id: string): Promise<AxiosResponse<GetDetails>> {
+  return axios.get(`${HOST}/details/${xe_id}`);
 }

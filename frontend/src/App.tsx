@@ -5,6 +5,7 @@ import PropertiesTab from './tabs/Properties';
 import LoadConfigTab from './tabs/LoadConfig';
 import AddLoadConfigTab from './tabs/AddLoadConfig';
 import DataLoadsTab from './tabs/DataLoads';
+import DetailsTab from './tabs/Details';
 const { Header, Content, Footer } = Layout;
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/config" element={<LoadConfigTab />} />
             <Route path="/add_config" element={<AddLoadConfigTab />} />
             <Route path="/loads" element={<DataLoadsTab />} />
+            <Route path="/details/:propertyId" element={<DetailsTab />} />
           </Routes>
         </div>
       </Content>

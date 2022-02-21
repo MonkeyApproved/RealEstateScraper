@@ -1,10 +1,25 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, JsonResponse
 from rest_framework.viewsets import ModelViewSet
 
 from . import serializers
 from . import models
 
+
+def detailsView(request, xe_id: str):
+    xe_results = models.XeResult.objects.filter(xe_id=xe_id)
+    details = [model_to_dict(result.details) for result in xe_results]
+    geo = [model_to_dict(result.location) for result in xe_results]
+    owner = [model_to_dict(result.owner) for result in xe_results]
+    metrics = models.PageMetrics.objects.filter(xe_id=xe_id)
+    return JsonResponse({
+        'xe_result': list(xe_results.values()),
+        'details': details,
+        'location': geo,
+        'owner': owner,
+        'metrics': list(metrics.values()),
+    })
 
 
 class XeResultView(ModelViewSet):
