@@ -64,3 +64,9 @@ The scheduler can then be initialized by running
 ```bash
 python src/manage.py create_jobs <app name>
 ```
+
+To run the jobs we can do this either manually:
+
+```bash
+python src/manage.py runjobs hourly
+```
