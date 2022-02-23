@@ -8,24 +8,32 @@ import DataLoadsTab from './tabs/DataLoads';
 import DetailsTab from './tabs/Details';
 import { getXeResult, XeResult } from './requests/xe_properties';
 import { useEffect, useState } from 'react';
+import { PropertyTableSettings } from './table/PropertiesTable';
 const { Header, Content, Footer } = Layout;
 
 export default function App() {
   const navigate = useNavigate();
   const [properties, setProperties] = useState<XeResult[]>([]);
-  const [count, setCount] = useState<number>(0);
-  const [page, setPage] = useState<number>(1);
+  const [tableSettings, setTableSettings] = useState<PropertyTableSettings>({
+    count: 0,
+    limit: 20,
+    offset: 0,
+    ordering: '',
+    filter: '',
+  });
 
   useEffect(() => {
-    getXeResult(page)
+    getXeResult(tableSettings)
       .then((response) => {
         setProperties(response.data.results);
-        setCount(response.data.count);
+        if (response.data.count !== tableSettings.count) {
+          setTableSettings({ ...tableSettings, count: response.data.count });
+        }
       })
       .catch((error) => {
         message.error(`Failed to GET Xe Results: ${error}`);
       });
-  }, [page]);
+  }, [tableSettings]);
 
   return (
     <Layout className="layout">
@@ -54,18 +62,36 @@ export default function App() {
           <Routes>
             <Route
               path="/"
-              element={<PropertiesTab propertyList={properties} count={count} setPage={setPage} />}
+              element={
+                <PropertiesTab
+                  propertyList={properties}
+                  settings={tableSettings}
+                  setSettings={setTableSettings}
+                />
+              }
             />
             <Route
               path="/properties"
-              element={<PropertiesTab propertyList={properties} count={count} setPage={setPage} />}
+              element={
+                <PropertiesTab
+                  propertyList={properties}
+                  settings={tableSettings}
+                  setSettings={setTableSettings}
+                />
+              }
             />
             <Route path="/config" element={<LoadConfigTab />} />
             <Route path="/add_config" element={<AddLoadConfigTab />} />
             <Route path="/loads" element={<DataLoadsTab />} />
             <Route
               path="/details/:propertyId"
-              element={<DetailsTab propertyList={properties} count={count} setPage={setPage} />}
+              element={
+                <DetailsTab
+                  propertyList={properties}
+                  settings={tableSettings}
+                  setSettings={setTableSettings}
+                />
+              }
             />
           </Routes>
         </div>

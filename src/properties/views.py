@@ -31,6 +31,9 @@ class XeResultFilter(filters.FilterSet):
     price = filters.NumberFilter(field_name="details__price_total", lookup_expr='exact')
     min_price = filters.NumberFilter(field_name="details__price_total", lookup_expr='gte')
     max_price = filters.NumberFilter(field_name="details__price_total", lookup_expr='lte')
+    created_on = filters.DateFilter(field_name="data_load__created_on", lookup_expr='exact')
+    created_after = filters.DateFilter(field_name="data_load__created_on", lookup_expr='gt')
+    last_parsed_after = filters.DateFilter(field_name="last_parsed_on", lookup_expr='gt')
 
     class Meta:
         model = models.XeResult

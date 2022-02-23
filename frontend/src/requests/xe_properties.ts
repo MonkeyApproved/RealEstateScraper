@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { PropertyTableSettings } from '../table/PropertiesTable';
 import { Pagination } from './helper';
 
 const HOST = 'http://localhost:8001/properties';
@@ -62,9 +63,13 @@ export interface GetDetails {
   metrics: Metrics[];
 }
 
-export async function getXeResult(page: number): Promise<AxiosResponse<Pagination<XeResult>>> {
-  const offset = (page - 1) * 20;
-  return axios.get(`${HOST}/xe_result/?limit=20&offset=${offset}`);
+export async function getXeResult({
+  offset,
+  limit,
+  ordering,
+}: PropertyTableSettings): Promise<AxiosResponse<Pagination<XeResult>>> {
+  const pagination = `?limit=${limit}&offset=${offset}`;
+  return axios.get(`${HOST}/xe_result/${pagination}${ordering}`);
 }
 
 export async function getDetails(xe_id: string): Promise<AxiosResponse<GetDetails>> {

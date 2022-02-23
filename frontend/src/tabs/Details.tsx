@@ -13,7 +13,7 @@ import { PropertiesTableProps } from '../table/PropertiesTable';
 import PropertiesTab from './Properties';
 import styles from './Tabs.module.css';
 
-export default function DetailsTab({ propertyList, count, setPage }: PropertiesTableProps) {
+export default function DetailsTab(props: PropertiesTableProps) {
   const params = useParams();
   const navigate = useNavigate();
   const [xeResult, setXeResult] = useState<GetDetails>();
@@ -75,7 +75,11 @@ export default function DetailsTab({ propertyList, count, setPage }: PropertiesT
 
   return (
     <>
-      <PropertiesTab propertyList={propertyList} count={count} setPage={setPage} />
+      <PropertiesTab
+        propertyList={props.propertyList}
+        settings={props.settings}
+        setSettings={props.setSettings}
+      />
       <Modal
         style={{ top: 20 }}
         width={'90vw'}

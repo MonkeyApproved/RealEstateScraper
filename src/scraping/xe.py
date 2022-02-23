@@ -218,8 +218,9 @@ class Xe(WebPage):
             type: str,
             geo_place_id: str,
             max_price: int,
-            min_year: int,
-            min_size: int,
+            min_year: int = None,
+            min_size: int = None,
+            min_level: int = None,
     ) -> None:
         super().__init__()
         self.url = (
@@ -227,10 +228,15 @@ class Xe(WebPage):
             f"transaction_name=buy&"
             f"item_type={type}&"
             f"geo_place_id={geo_place_id}&"
-            f"maximum_price={max_price}&"
-            f"minimum_construction_year={min_year}&"
-            f"minimum_size={min_size}"
+            f"maximum_price={max_price}"
         )
+        if min_year is not None:
+            self.url += f"&minimum_construction_year={min_year}"
+        if min_size is not None:
+            self.url += f"&minimum_size={min_size}"
+        if min_level is not None:
+            self.url += f"&minimum_level=L{min_level}"
+
 
     def check_for_properties(
         self,

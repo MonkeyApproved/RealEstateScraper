@@ -1,10 +1,14 @@
 import styles from './Tabs.module.css';
 import PropertiesTable, { PropertiesTableProps } from '../table/PropertiesTable';
 
-export default function PropertiesTab({ propertyList, count, setPage }: PropertiesTableProps) {
+export default function PropertiesTab(props: PropertiesTableProps) {
   return (
     <div className={styles.content}>
-      <PropertiesTable propertyList={propertyList} count={count} setPage={setPage} />
+      <PropertiesTable
+        propertyList={props.propertyList}
+        settings={props.settings}
+        setSettings={props.setSettings}
+      />
     </div>
   );
 }
