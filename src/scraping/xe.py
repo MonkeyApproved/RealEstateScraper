@@ -83,6 +83,9 @@ class XeProperty(object):
         # for every run we save the current page metrics (clicks/saves)
         self.add_page_metrics_to_database()
 
+        # we also check the list of images and add any new ones
+        self.add_image_urls_to_database()
+
         # now we check if we already have an entry with the same property id
         # containing the latest updates (same "modified" date as current details)
         if self.already_in_database():
@@ -111,6 +114,7 @@ class XeProperty(object):
         result = models.XeResult(
             xe_id=self.get_integer("id"),
             created=self.get_date("creation_date"),
+            url=self.get_string("url"),
             modified=self.get_date("modification_date"),
             owner=self.add_owner_to_database(),
             location=self.add_geo_location_to_database(),
@@ -166,6 +170,30 @@ class XeProperty(object):
         geo.save()
         return geo
 
+    @property
+    def image_urls(self):
+        urls: List[Dict[str, Dict[str, str]]] = self.details.get("image_gallery", [])
+        return urls
+
+    def add_image_urls_to_database(self):
+        image_list = self.image_urls
+        for image in image_list:
+            # check if image already in db
+            images = models.Image.objects.filter(
+                xe_id=self.get_integer("id"),
+                small=image['small']['jpeg'],
+            )
+            if images.count() != 0:
+                # image is already in database
+                continue
+            image_object = models.Image(
+                xe_id = self.id,
+                small = image['small']['jpeg'],
+                medium = image['medium']['jpeg'],
+                big=image['big']['jpeg'],
+            )
+            image_object.save()
+
     def save_details_to_disk(self):
         path = Path(DETAILS_DIR, f"{self.id}.json")
         if path.exists():
@@ -173,34 +201,6 @@ class XeProperty(object):
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w") as file:
             json.dump(self.details, file, indent=4, sort_keys=True)
-
-    @property
-    def image_urls(self):
-        urls: List[str] = self.details.get("image_gallery", [])
-        return urls
-
-    def save_images(self):
-        for url in self.image_urls:
-            try:
-                response = requests.get(url)
-                filename = url.split("/")[-1]
-                self.save_image_to_disc(response.content, filename)
-            except requests.exceptions.Timeout as e:
-                self.logger.warning(f"Request timeout: {e.response}")
-            except requests.exceptions.RequestException as e:
-                self.logger.warning(f"Request failed: {e.response}")
-
-    def save_image_to_disc(self, image, filename: str):
-        path = Path(IMAGE_DIR, self.id, filename)
-        if path.exists():
-            return
-        path.parent.mkdir(parents=True, exist_ok=True)
-        print(str(path))
-        with path.open("wb") as file:
-            file.write(image)
-        self.logger.info(f'saved image "{filename}"')
-        self.images.add(f"{self.id}/{filename}")
-        return path
 
 
 class PropertyType(Enum):
@@ -218,8 +218,9 @@ class Xe(WebPage):
             type: str,
             geo_place_id: str,
             max_price: int,
-            min_year: int,
-            min_size: int,
+            min_year: int = None,
+            min_size: int = None,
+            min_level: int = None,
     ) -> None:
         super().__init__()
         self.url = (
@@ -227,15 +228,18 @@ class Xe(WebPage):
             f"transaction_name=buy&"
             f"item_type={type}&"
             f"geo_place_id={geo_place_id}&"
-            f"maximum_price={max_price}&"
-            f"minimum_construction_year={min_year}&"
-            f"minimum_size={min_size}"
+            f"maximum_price={max_price}"
         )
+        if min_year is not None:
+            self.url += f"&minimum_construction_year={min_year}"
+        if min_size is not None:
+            self.url += f"&minimum_size={min_size}"
+        if min_level is not None:
+            self.url += f"&minimum_level=L{min_level}"
 
     def check_for_properties(
         self,
         load_config: LoadConfiguration,
-        save_images: bool = False,
         save_to_db: bool = False,
         save_details_to_disc: bool = False,
     ):
@@ -260,8 +264,6 @@ class Xe(WebPage):
                 if property.id is None:
                     # cell does not contain property details
                     continue
-                if save_images:
-                    property.save_images()
                 if save_to_db:
                     is_new = property.save_to_database(data_load=data_load)
                     if is_new:

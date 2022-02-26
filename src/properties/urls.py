@@ -13,5 +13,6 @@ router.register(r'page_metrics', views.PageMetricsView)
 
 
 urlpatterns = [
+    path("details/<int:xe_id>", views.detailsView),
     path("", include(router.urls)),
 ]
