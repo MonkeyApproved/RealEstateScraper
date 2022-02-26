@@ -16,13 +16,16 @@ def detailsView(request, xe_id: str):
     geo = [model_to_dict(result.location) for result in xe_results]
     owner = [model_to_dict(result.owner) for result in xe_results]
     metrics = models.PageMetrics.objects.filter(xe_id=xe_id)
+    images = models.Image.objects.filter(xe_id=xe_id)
     return JsonResponse({
         'xe_result': list(xe_results.values()),
         'details': details,
         'location': geo,
         'owner': owner,
         'metrics': list(metrics.values()),
+        'images': list(images.values()),
     })
+
 
 class XeResultFilter(filters.FilterSet):
     min_bathrooms = filters.NumberFilter(field_name="details__bathrooms", lookup_expr='gte')

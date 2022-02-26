@@ -19,6 +19,13 @@ class PageMetrics(models.Model):
     visits = models.IntegerField()
 
 
+class Image(models.Model):
+    xe_id = models.IntegerField()
+    big = models.CharField(max_length=100)
+    medium = models.CharField(max_length=100)
+    small = models.CharField(max_length=100)
+
+
 class GeoLocation(models.Model):
     latitude = models.CharField(max_length=100)
     longitude = models.CharField(max_length=100)
@@ -45,6 +52,7 @@ class XeResult(models.Model):
     xe_id = models.IntegerField()
     first_parsed_on = models.DateTimeField(default=timezone.now)
     last_parsed_on = models.DateTimeField(default=timezone.now)
+    url = models.CharField(max_length=100, null=True)
     created = models.DateField(null=True)
     modified = models.DateField(null=True)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)

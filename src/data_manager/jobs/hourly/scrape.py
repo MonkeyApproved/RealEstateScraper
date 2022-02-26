@@ -11,10 +11,11 @@ class Job(HourlyJob):
     If there are jobs to be done they are exacuted right away.
     """
 
-    def hours_passed(self, time):
-        SECONDS_IN_HOUR = 60 * 60
+    @staticmethod
+    def hours_passed(time):
+        seconds_in_hour = 60 * 60
         time_passed = (timezone.now() - time)
-        return round(time_passed.seconds / SECONDS_IN_HOUR, 1)
+        return round(time_passed.seconds / seconds_in_hour, 1)
 
     def check_collection_configs(self):
         config_list = LoadConfiguration.objects.all()
@@ -49,7 +50,6 @@ class Job(HourlyJob):
         )
         xe.check_for_properties(
             load_config=load_config,
-            save_images=False,
             save_to_db=True,
             save_details_to_disc=False,
         )

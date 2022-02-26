@@ -34,6 +34,12 @@ export default function DetailsTab(props: PropertiesTableProps) {
     return `https://maps.google.com/maps?q=${lat}, ${long}&z=15&output=embed`;
   };
 
+  const getImages = () => {
+    return xeResult?.images.map((image) => {
+      return <img src={image.small} key={image.small} alt={`property_${image.xe_id}`} />;
+    });
+  };
+
   const roomsTitle = (
     <>
       <BuildOutlined />
@@ -119,7 +125,14 @@ export default function DetailsTab(props: PropertiesTableProps) {
         <Row justify="center" align="top" style={{ paddingTop: 10 }}>
           <Card title={descriptionTitle} style={{ width: '60%', height: '100%' }}>
             <p>{xeResult?.details[0].description}</p>
+            <a href={xeResult?.xe_result[0].url} target="_blank" rel="noreferrer">
+              See add on xe.gr
+            </a>
           </Card>
+        </Row>
+        <Divider orientation="center">IMAGES</Divider>
+        <Row justify="center" align="top" style={{ paddingTop: 10 }}>
+          <div className={styles.imageGallery}>{getImages()}</div>
         </Row>
         <Divider orientation="center">MAP</Divider>
         <iframe className={styles.map} src={get_maps_url()}></iframe>

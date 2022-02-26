@@ -52,7 +52,7 @@ export default function AddLoadConfigTab() {
         <Form.Item name="geo_place_id" label="Location" rules={[{ required: true }]}>
           <Radio.Group>
             <Radio.Button value="ChIJ8UNwBh-9oRQR3Y1mdkU1Nic">Athens</Radio.Button>
-            <Radio.Button value="ChIJ8UNwBh-9oRQR3Y1mdkU1Nic">Corfu</Radio.Button>
+            <Radio.Button value="ChIJ11DRvwBcWxMREJS54iy9AAQ">Corfu</Radio.Button>
           </Radio.Group>
         </Form.Item>
         <Form.Item name="maximum_price" label="Max price">

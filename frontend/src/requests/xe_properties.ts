@@ -9,6 +9,7 @@ export interface XeResult {
   xe_id: number;
   first_parsed_on: string;
   last_parsed_on: string;
+  url: string;
   created: string;
   modified: string;
   owner: string;
@@ -55,12 +56,20 @@ export interface Metrics {
   visits: number;
 }
 
+export interface Image {
+  xe_id: number;
+  small: string;
+  medium: string;
+  big: string;
+}
+
 export interface GetDetails {
   xe_result: XeResult[];
   details: Details[];
   location: Location[];
   owner: Owner[];
   metrics: Metrics[];
+  images: Image[];
 }
 
 export async function getXeResult({
