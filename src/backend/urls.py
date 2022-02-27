@@ -15,6 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import render
+
+
+def react_app(request):
+    return render(request, 'index.html')
 
 
 urlpatterns = [
@@ -22,4 +27,5 @@ urlpatterns = [
     path("__debug__/", include("debug_toolbar.urls")),
     path("properties/", include("properties.urls")),
     path("manager/", include("data_manager.urls")),
+    path("", react_app),
 ]
