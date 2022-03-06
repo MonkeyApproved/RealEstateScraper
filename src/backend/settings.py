@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+FRONTEND_DIR = Path(BASE_DIR.parent / 'frontend' / 'build')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-u_c#fpeet@$5+cm6&rrtfmw43)izc52z-oxrl%uq4kk9u_4s=(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 LOGGING = {
     'version': 1,
@@ -90,13 +90,16 @@ MIDDLEWARE = [
 ROOT_URLCONF = "backend.urls"
 
 CORS_ORIGIN_WHITELIST = [
-     "http://localhost:3000"
+    "http://localhost:3000",
+    "http://127.0.0.1:8001",
+    "http://localhost:8001",
+    "http://192.168.178.42:8001",
 ]
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [FRONTEND_DIR],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -158,6 +161,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = (
+    Path(FRONTEND_DIR, 'static'),
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

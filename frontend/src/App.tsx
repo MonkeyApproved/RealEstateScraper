@@ -1,50 +1,80 @@
 import { Layout, Menu, message } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, HomeOutlined } from '@ant-design/icons';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import PropertiesTab from './tabs/Properties';
-import LoadConfigTab from './tabs/LoadConfig';
-import AddLoadConfigTab from './tabs/AddLoadConfig';
-import DataLoadsTab from './tabs/DataLoads';
-import DetailsTab from './tabs/Details';
-import { getXeResult, XeResult } from './requests/xe_properties';
+import LoadConfigTab from './pages/LoadConfig';
+import AddLoadConfigTab from './pages/AddLoadConfig';
+import DataLoadsTab from './pages/DataLoads';
+import styles from './pages/Tabs.module.css';
+import { getXeResult, TableSettings, XeResult } from './requests/xe_properties';
 import { useEffect, useState } from 'react';
-import { PropertyTableSettings } from './table/PropertiesTable';
+import ApartmentTable from './table/ApartmentTable';
+import LandTable from './table/LandTable';
 const { Header, Content, Footer } = Layout;
 
 export default function App() {
   const navigate = useNavigate();
-  const [properties, setProperties] = useState<XeResult[]>([]);
-  const [tableSettings, setTableSettings] = useState<PropertyTableSettings>({
+
+  // values and settings for apartment table
+  const [apartments, setApartments] = useState<XeResult[]>([]);
+  const [apTableSettings, setApTableSettings] = useState<TableSettings>({
+    page: 1,
     count: 0,
     limit: 20,
     offset: 0,
     ordering: '',
-    filter: '',
+    filter: '&type=re_residence',
   });
 
   useEffect(() => {
-    getXeResult(tableSettings)
+    getXeResult(apTableSettings)
       .then((response) => {
-        setProperties(response.data.results);
-        if (response.data.count !== tableSettings.count) {
-          setTableSettings({ ...tableSettings, count: response.data.count });
+        setApartments(response.data.results);
+        if (response.data.count !== apTableSettings.count) {
+          setApTableSettings({ ...apTableSettings, count: response.data.count });
         }
       })
       .catch((error) => {
-        message.error(`Failed to GET Xe Results: ${error}`);
+        message.error(`Failed to GET Xe Results for Apartments: ${error}`);
       });
-  }, [tableSettings]);
+  }, [apTableSettings]);
+
+  // values and settings for apartment table
+  const [land, setLand] = useState<XeResult[]>([]);
+  const [landTableSettings, setLandTableSettings] = useState<TableSettings>({
+    page: 1,
+    count: 0,
+    limit: 20,
+    offset: 0,
+    ordering: '',
+    filter: '&type=re_land',
+  });
+
+  useEffect(() => {
+    getXeResult(landTableSettings)
+      .then((response) => {
+        setLand(response.data.results);
+        if (response.data.count !== landTableSettings.count) {
+          setLandTableSettings({ ...landTableSettings, count: response.data.count });
+        }
+      })
+      .catch((error) => {
+        message.error(`Failed to GET Xe Results for Land: ${error}`);
+      });
+  }, [landTableSettings]);
 
   return (
     <Layout className="layout">
       <Header>
-        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['properties']}>
+        <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['apartments']}>
           <Menu.Item
-            key="properties"
-            icon={<MailOutlined />}
-            onClick={() => navigate('/properties')}
+            key="apartments"
+            icon={<HomeOutlined />}
+            onClick={() => navigate('/apartments')}
           >
-            <span>Properties</span>
+            <span>Apartments</span>
+          </Menu.Item>
+          <Menu.Item key="land" icon={<AppstoreOutlined />} onClick={() => navigate('/land')}>
+            <span>Land</span>
           </Menu.Item>
           <Menu.Item key="config" onClick={() => navigate('/config')}>
             <span>Config</span>
@@ -63,36 +93,42 @@ export default function App() {
             <Route
               path="/"
               element={
-                <PropertiesTab
-                  propertyList={properties}
-                  settings={tableSettings}
-                  setSettings={setTableSettings}
-                />
+                <div className={styles.content}>
+                  <ApartmentTable
+                    propertyList={apartments}
+                    settings={apTableSettings}
+                    setSettings={setApTableSettings}
+                  />
+                </div>
               }
             />
             <Route
-              path="/properties"
+              path="/apartments"
               element={
-                <PropertiesTab
-                  propertyList={properties}
-                  settings={tableSettings}
-                  setSettings={setTableSettings}
-                />
+                <div className={styles.content}>
+                  <ApartmentTable
+                    propertyList={apartments}
+                    settings={apTableSettings}
+                    setSettings={setApTableSettings}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="/land"
+              element={
+                <div className={styles.content}>
+                  <LandTable
+                    propertyList={land}
+                    settings={landTableSettings}
+                    setSettings={setLandTableSettings}
+                  />
+                </div>
               }
             />
             <Route path="/config" element={<LoadConfigTab />} />
             <Route path="/add_config" element={<AddLoadConfigTab />} />
             <Route path="/loads" element={<DataLoadsTab />} />
-            <Route
-              path="/details/:propertyId"
-              element={
-                <DetailsTab
-                  propertyList={properties}
-                  settings={tableSettings}
-                  setSettings={setTableSettings}
-                />
-              }
-            />
           </Routes>
         </div>
       </Content>

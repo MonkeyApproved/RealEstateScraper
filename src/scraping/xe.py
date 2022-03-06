@@ -2,6 +2,7 @@ import re
 import json
 import requests
 import logging
+import time
 from django.utils import timezone
 from enum import Enum
 from functools import cached_property
@@ -18,23 +19,12 @@ IMAGE_DIR = Path(ROOT_DIR, "output", "images")
 
 
 class XeProperty(object):
-    def __init__(self, cell) -> None:
-        self.cell = cell
+    def __init__(self, xe_id: int) -> None:
+        self.id = xe_id
         self.logger = logging.getLogger(f"{self.id}")
 
     def __repr__(self) -> str:
         return f"< Property {self.id} >"
-
-    @property
-    def id(self):
-        # the property id can be parsed from the link to the result page inside cell
-        a = self.cell.find("a")
-        if a is None:
-            return None
-        match = re.search(r"poliseis-katoikion/(?P<id>\d+)/", a["href"])
-        if match is None:
-            return None
-        return match.group("id")
 
     @property
     def url(self):
@@ -44,6 +34,7 @@ class XeProperty(object):
     def details(self):
         try:
             response = requests.get(self.url)
+            response.raise_for_status()
             result: Dict[str, Any] = response.json()["result"]
             return result
         except requests.exceptions.Timeout as e:
@@ -78,6 +69,7 @@ class XeProperty(object):
 
     def save_to_database(self, data_load: DataLoad):
         if self.details is None:
+            self.logger.warning(f'No details available for "{self.id}", skipping...')
             return False
 
         # for every run we save the current page metrics (clicks/saves)
@@ -99,13 +91,11 @@ class XeProperty(object):
             xe_id=self.get_integer("id"),
             modified=self.get_date("modification_date"),
         )
-        count = entries.count()
-        if count > 0:
+        if entries.count() > 0:
             # entry with matching id and modified date already exists
             # update "last_parsed_on" field to now
-            matching_entry = entries.get()
-            matching_entry.last_parsed_on = timezone.now()
-            matching_entry.save()
+            entries.update(last_parsed_on=timezone.now())
+            self.logger.info(f'Already in database...')
             return True
         # no matching entry found in database
         return False
@@ -122,6 +112,7 @@ class XeProperty(object):
             data_load=data_load
         )
         result.save()
+        self.logger.info(f'saved {self.id} - {self.get_string("item_type")}')
         return result
 
     def add_residence_to_database(self):
@@ -187,7 +178,7 @@ class XeProperty(object):
                 # image is already in database
                 continue
             image_object = models.Image(
-                xe_id = self.id,
+                xe_id = self.get_integer("id"),
                 small = image['small']['jpeg'],
                 medium = image['medium']['jpeg'],
                 big=image['big']['jpeg'],
@@ -195,7 +186,7 @@ class XeProperty(object):
             image_object.save()
 
     def save_details_to_disk(self):
-        path = Path(DETAILS_DIR, f"{self.id}.json")
+        path = Path(DETAILS_DIR, f"{self.get_integer('id')}.json")
         if path.exists():
             return
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -230,18 +221,31 @@ class Xe(WebPage):
             f"geo_place_id={geo_place_id}&"
             f"maximum_price={max_price}"
         )
-        if min_year is not None:
+        if type == PropertyType.LAND.value:
+            self.url += '&building_type_options%5B%5D=plot'
+            self.url += '&city_plan_options%5B%5D=included'
+        if min_year is not None and type == PropertyType.RESIDENCE.value:
             self.url += f"&minimum_construction_year={min_year}"
-        if min_size is not None:
+        if min_size is not None and type == PropertyType.RESIDENCE.value:
             self.url += f"&minimum_size={min_size}"
-        if min_level is not None:
+        if min_level is not None and type == PropertyType.RESIDENCE.value:
             self.url += f"&minimum_level=L{min_level}"
+
+    @staticmethod
+    def get_id_from_cell(cell: str):
+        # the property id can be parsed from the link to the result page inside cell
+        a = cell.find("a")
+        if a is None:
+            return None
+        match = re.search(r"(poliseis-katoikion|poliseis-gis-oikopedon)/(?P<id>\d+)/", a["href"])
+        if match is None:
+            return None
+        return int(match.group("id"))
 
     def check_for_properties(
         self,
         load_config: LoadConfiguration,
-        save_to_db: bool = False,
-        save_details_to_disc: bool = False,
+        only_parse_new: bool = True,
     ):
         data_load = DataLoad(
             url=self.url,
@@ -260,20 +264,23 @@ class Xe(WebPage):
                 "div", class_="property-ad-image-container"
             )
             for cell in cells:
-                property = XeProperty(cell)
-                if property.id is None:
-                    # cell does not contain property details
+                xe_id = self.get_id_from_cell(cell)
+                if xe_id is None:
                     continue
-                if save_to_db:
-                    is_new = property.save_to_database(data_load=data_load)
-                    if is_new:
-                        data_load.count_new += 1
-                if save_details_to_disc:
-                    property.save_details_to_disk()
+                existing_entries = models.XeResult.objects.filter(xe_id=xe_id)
+                if existing_entries.count() > 0 and only_parse_new:
+                    # only parse new entries for now -> too many requests get blocked
+                    existing_entries.update(last_parsed_on=timezone.now())
+                    self.logger.info(f'Skipping "{xe_id}" - {existing_entries.count()} matches found in db')
+                    continue
+                xe_property = XeProperty(xe_id=xe_id)
+                is_new = xe_property.save_to_database(data_load=data_load)
                 data_load.count_total += 1
+                if is_new:
+                    data_load.count_new += 1
+                time.sleep(10)
             data_load.save()
-            cell_count = len(cells)
-            self.logger.info(f"On page {page}, {cell_count} cell elements found.")
+            self.logger.info(f"On page {page}, {len(cells)} cell elements found.")
             if len(cells) < 30:
                 self.logger.info("All done!")
                 # this was the last page of the pagination

@@ -6,6 +6,7 @@ from logging import getLogger
 
 logger = getLogger('Scape Job')
 
+
 class Job(HourlyJob):
     help = """This job checks if there are outstanding scraping jobs.
     If there are jobs to be done they are exacuted right away.
@@ -32,6 +33,7 @@ class Job(HourlyJob):
                 logger.info(f'  >> collection will be run')
                 continue
             time_passed = self.hours_passed(last_load.created_on)
+            time_passed = 42
             logger.info(f'  >> time since last collection: {time_passed}h')
             if time_passed > config.frequency:
                 to_be_collected.append(config)
@@ -40,7 +42,8 @@ class Job(HourlyJob):
                 logger.info(f'  >> skipping, frequency is {config.frequency}h')
         return to_be_collected
 
-    def run_collection(self, load_config):
+    @staticmethod
+    def run_collection(load_config):
         xe = Xe(
             type=load_config.item_type,
             geo_place_id=load_config.geo_place_id,
@@ -50,8 +53,7 @@ class Job(HourlyJob):
         )
         xe.check_for_properties(
             load_config=load_config,
-            save_to_db=True,
-            save_details_to_disc=False,
+            only_parse_new=True,
         )
 
     def execute(self):

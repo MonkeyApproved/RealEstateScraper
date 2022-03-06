@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
-import { Pagination } from './helper';
+import { BASE_URL, Pagination } from './helper';
 
-const HOST = 'http://localhost:8001/manager';
+const HOST = `${BASE_URL}/manager`;
 
 export const geo_location_ids: { [name: string]: string } = {
   'ChIJ8UNwBh-9oRQR3Y1mdkU1Nic': 'Athens',
