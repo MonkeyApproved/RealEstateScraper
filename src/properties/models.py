@@ -4,7 +4,7 @@ from data_manager.models import DataLoad
 
 
 class Owner(models.Model):
-    account_id = models.IntegerField()
+    account_id = models.IntegerField(null=True)
     email = models.CharField(max_length=100, null=True)
     address = models.CharField(max_length=100, null=True)
     ref_id = models.CharField(max_length=100, null=True)

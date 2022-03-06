@@ -1,8 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
-import { PropertyTableSettings } from '../table/PropertiesTable';
-import { Pagination } from './helper';
+import { BASE_URL, Pagination } from './helper';
 
-const HOST = 'http://localhost:8001/properties';
+const HOST = `${BASE_URL}/properties`;
 
 export interface XeResult {
   id: number;
@@ -72,15 +71,25 @@ export interface GetDetails {
   images: Image[];
 }
 
+export interface TableSettings {
+  page: number;
+  count: number;
+  limit: number;
+  offset: number;
+  ordering: string;
+  filter: string;
+}
+
 export async function getXeResult({
   offset,
   limit,
   ordering,
-}: PropertyTableSettings): Promise<AxiosResponse<Pagination<XeResult>>> {
+  filter,
+}: TableSettings): Promise<AxiosResponse<Pagination<XeResult>>> {
   const pagination = `?limit=${limit}&offset=${offset}`;
-  return axios.get(`${HOST}/xe_result/${pagination}${ordering}`);
+  return axios.get(`${HOST}/xe_result/${pagination}${ordering}${filter}`);
 }
 
-export async function getDetails(xe_id: string): Promise<AxiosResponse<GetDetails>> {
+export async function getDetails(xe_id: number): Promise<AxiosResponse<GetDetails>> {
   return axios.get(`${HOST}/details/${xe_id}`);
 }

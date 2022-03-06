@@ -31,6 +31,7 @@ class XeResultFilter(filters.FilterSet):
     min_bathrooms = filters.NumberFilter(field_name="details__bathrooms", lookup_expr='gte')
     min_bedrooms = filters.NumberFilter(field_name="details__bedrooms", lookup_expr='gte')
     area = filters.CharFilter(field_name="details__area", lookup_expr='exact')
+    type = filters.CharFilter(field_name="details__item_type", lookup_expr='exact')
     price = filters.NumberFilter(field_name="details__price_total", lookup_expr='exact')
     min_price = filters.NumberFilter(field_name="details__price_total", lookup_expr='gte')
     max_price = filters.NumberFilter(field_name="details__price_total", lookup_expr='lte')
